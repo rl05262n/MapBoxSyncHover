@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Asian American participation in the 2022 general election vs 2024 special election</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet">
+    <style>
+       /* css file for syncmap  */
+       body { margin: 0; padding: 0; }
+body, h1, p, button {
+    font-family: 'Roboto', sans-serif;
+}
+.content { height: 200vh; background-color: #f0f0f0; }
+#iframe-map-container {position: relative; height: 100vh; }
+
+.map {
+    position: relative;
+    width: 50%;
+    height: 100vh;
+    float:left;
+} 
+#iframe-mapContainerMain1 {
+    float: left;
+    padding: 0;
+    width: 49.5%; 
+    height: 100vh;
+    overflow: hidden; 
+    box-sizing: border-box;
+    border-right: 1px solid black;
+}
+
+#iframe-mapContainerMain2 {
+    float: left;
+    padding: 0;
+    width: 50.5%; 
+    overflow: hidden; 
+    box-sizing: border-box;
+    height: 100vh;
+}
+.menu {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    background: white;
+    padding: 2.5px; 
+    z-index: 1;
+}
+
+.menu button {
+    display: block;
+    margin: 2px 0;
+    padding: 4px 4px; 
+    font-size: 8px; 
+}
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+.pan-buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.pan-buttons button {
+    margin: 1px;
+    padding: 5px 5px; 
+    font-size: 10px; 
+}
+
+.tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: white;
+    font-size: 12px; 
+    padding: 8px;
+    border-radius: 5px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    display: none;
+    z-index: 10;
+}
+@media (max-width: 500px) {
+    .tooltip {
+        font-size: 9.5px; 
+        padding: 5px;
+    }
+}
+
+@media (min-width: 700px) {
+    .tooltip {
+        font-size: 12px; 
+        padding: 5px;
+    }
+}
+
+.mapboxgl-canvas {
+    cursor: grab;
+    width: 100% !important; 
+    height: 100% !important;
+}
+
+.mapboxgl-canvas:hover {
+    cursor: pointer;
+}
+
+.mapboxgl-popup {
+    position: relative;
+    bottom: 10px !important; 
+    left: 10px !important;
+    transform: none !important; 
+    padding: 1px;
+    background-color: white;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    max-width: 250px;
+    font-family: 'Arial', sans-serif;
+}
+@media (max-width: 450px) {
+    .mapboxgl-popup  {
+        font-size: 8.5px;
+        padding: 1px;
+    }
+}
+#popup-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+}
+.legend {
+  position: absolute;
+  bottom: 30px;
+  left: 10px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 1px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  font-size: 12px;
+  font-family: 'Roboto', sans-serif;
+}
+@media (max-width: 350px) {
+    .legend  {
+        font-size: 8.5px;
+        padding: 5px;
+    }
+}
+    </style>  
+</head>
+
+<body>
+    <div class="content">  
+    <div id="iframe-map-container"> 
+        
+        <div id="tooltip-map1" class="tooltip"></div>
+        <div id="tooltip-map2" class="tooltip"></div>
+    
+        <div id="iframe-mapContainerMain1" class="map"></div>
+    
+    
+        <div id="iframe-mapContainerMain2" class="map"></div>
+        <div class="legend">
+            <h4>Legend</h4>
+            <ul style="list-style-type: none; padding: 0; margin: 0;">
+                <li><span style="background-color:hsl(4, 82%, 42%); width: 10px; height: 10px; display: inline-block; vertical-align: middle;"></span> 80% Republican</li>
+                <li><span style="background-color:#f9c2c2; width: 10px; height: 10px; display: inline-block; vertical-align: middle;"></span> 60% Republican</li>
+                <li><span style="background-color:#b6d2f1; width: 10px; height: 10px; display: inline-block; vertical-align: middle;"></span> 60% Democratic</li>
+                <li><span style="background-color:hsl(212, 68%, 46%); width: 10px; height: 10px; display: inline-block; vertical-align: middle;"></span> 80% Democratic</li>
+            </ul>
+        </div>        
+        <div class="menu">
+            <button id="zoom-in">Zoom In</button>
+            <button id="zoom-out">Zoom Out</button>
+            <div class="pan-buttons">
+                <button id="pan-left">&larr;</button>
+                <button id="pan-up">&uarr;</button>
+                <button id="pan-down">&darr;</button>
+                <button id="pan-right">&rarr;</button>
+            </div>
+
+
+<!--hover features template can be found at https://docs.mapbox.com/mapbox-gl-js/example/query-similar-features/-->
+
+        <button id="reset">Reset</button>
+        
+
+    </div>
+    
+</div>
+
+
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
+<script>
+    mapboxgl.accessToken = 'YOURAPITOKEN';
+    var hoveredFeatureId = null; 
+var hoveredFeatureId2 = null; 
+//defining zoom levels so that it can be responsive to different screen sizes 
+function getZoomLevel() {
+  if (window.innerWidth < 400) {
+    return 7.9; 
+  } else if (window.innerWidth < 700) {
+    return 8.2; 
+  } else if (window.innerWidth < 1024) {
+    return 8.5; 
+  } else {
+    return 8.8; 
+  }
+}
+
+
+//here is our first map contianer 
+var map1 = new mapboxgl.Map({
+    container: 'iframe-mapContainerMain1',
+    style: '',
+    center: [-73.63568, 40.76695],
+    zoom: getZoomLevel(),
+    dragRotate: false,
+    pitchWithRotate: false
+});
+//This is our layer that we need for the hover function to work. Alongside the data. 
+map1.on('load', function () {
+    map1.addLayer({
+        'id': 'choropleth-layer',
+        'type': 'fill',
+        'source': {
+            'type': 'geojson',
+            'data': './updated_2022idcon.geojson'
+        },
+        'paint': {
+            'fill-color': 'rgba(0, 136, 0, 0)',
+            'fill-opacity': 1
+        }
+    });
+});
+//here is our first map contianer 
+var map2 = new mapboxgl.Map({
+    container: 'iframe-mapContainerMain2',
+    style: '',
+    center: [-73.63568, 40.76695],
+    zoom: getZoomLevel(),
+    dragRotate: false,
+    pitchWithRotate: false
+});
+
+map2.on('load', function() {
+    map2.addLayer({
+        'id': 'regions-fill',
+        'type': 'fill',
+        'source': {
+            'type': 'geojson',
+            'data': './updated_2024idcon.geojson'
+        },
+        'paint': {
+            'fill-color': 'rgba(0, 136, 0, 0)',
+            'fill-opacity': 1
+        }
+    });
+});
+
+
+//define the tool tip. This will be the main component for the synced up function
+
+function showTooltip(map, feature, e) {
+    var tooltipId = map === map1 ? 'tooltip-map1' : 'tooltip-map2';
+    var tooltip = document.getElementById(tooltipId);
+
+    // Determine tooltip content based on the map
+    var content = "";
+    if (map === map1) {
+        content = `ED: ${feature.properties['ED']}<br> Area: ${feature.properties['County']}<br>Democratic Votes Percentage: ${(feature.properties['Democrat_1'] * 100).toFixed(2)}%<br>Republican Votes Percentage: ${(feature.properties['Republic_1'] * 100).toFixed(2)}%<br>Total Votes: ${feature.properties['Total Vote']}`;
+    } else {
+        content = `ED: ${feature.properties['ED']}<br> Area: ${feature.properties['County']}<br>Democratic Votes Percentage: ${(feature.properties['D_percenta'] * 100).toFixed(2)}%<br>Republican Votes Percentage: ${(feature.properties['R_percenta'] * 100).toFixed(2)}%<br>Total Votes: ${feature.properties['Total']}`;
+    }
+    // Calculate tooltip position before showing it
+    var mapContainer = map.getContainer().getBoundingClientRect();
+    var leftPos = `${e.point.x + mapContainer.left + 10}px`;
+    var topPos = `${e.point.y + mapContainer.top + 10}px`;
+
+    // Update tooltip content and position
+    tooltip.innerHTML = content;
+    tooltip.style.left = leftPos;
+    tooltip.style.top = topPos;
+
+    // Display the tooltip after position is set
+    tooltip.style.display = 'block';
+}
+
+// Ensure onHover for map2 matches features based on 'ED' and calls showTooltip
+function onHover(map, layerId, e) {
+  if (e.features.length > 0) {
+    var feature = e.features[0];
+    showTooltip(map, feature, e);
+
+    // Locate and show tooltip for the matching 'ED' feature on the other map
+    var otherMap = map === map1 ? map2 : map1;
+    var otherLayerId = map === map1 ? 'regions-fill' : 'choropleth-layer';
+    var otherMapSource = otherMap.getStyle().layers.find(layer => layer.id === otherLayerId).source;
+    otherMap.querySourceFeatures(otherMapSource, {
+        sourceLayer: otherLayerId,
+        filter: ['==', ['get', 'ED'], feature.properties['ED']]
+    }).forEach(matchingFeature => {
+        showTooltip(otherMap, matchingFeature, e);
+    });
+
+var mapContainer = map.getContainer().getBoundingClientRect();
+var tooltipId = map === map1 ? 'tooltip-map1' : 'tooltip-map2';
+var tooltip = document.getElementById(tooltipId);
+console.log(`Updating tooltip: ${tooltipId}, x: ${e.point.x} , y: ${e.point.y}`);
+tooltip.style.left = `${e.point.x + mapContainer.left + 10}px`;
+tooltip.style.top = `${e.point.y + mapContainer.top + 10}px`;
+
+var hoveredFeatureIdToUpdate = map === map1 ? hoveredFeatureId : hoveredFeatureId2;
+    var setFeatureStateOnMap = map === map1 ? map1 : map2;
+
+      // Highlight the hovered feature
+      if (hoveredFeatureIdToUpdate !== null) {
+        setFeatureStateOnMap.setFeatureState({ source: layerId, id: hoveredFeatureIdToUpdate }, { hover: false });
+    }
+
+    // Update the hoveredFeatureId to the currently hovered feature
+    if (map === map1) {
+        hoveredFeatureId = feature.id;
+    } else {
+        hoveredFeatureId2 = feature.id;
+    }
+    setFeatureStateOnMap.setFeatureState({ source: layerId, id: feature.id }, { hover: true });
+}
+}
+
+
+function resetTooltip(map, layerId) {
+    var tooltipId = map === map1 ? 'tooltip-map1' : 'tooltip-map2';
+    var tooltip = document.getElementById(tooltipId);
+    tooltip.style.display = 'none';
+
+    var hoveredFeatureIdToUpdate = map === map1 ? hoveredFeatureId : hoveredFeatureId2;
+    if (hoveredFeatureIdToUpdate !== null) {
+        var setFeatureStateOnMap = map === map1 ? map1 : map2;
+        setFeatureStateOnMap.setFeatureState({ source: layerId, id: hoveredFeatureIdToUpdate }, { hover: false });
+    }
+
+    // Reset hoveredFeatureId
+    if(map === map1) {
+        hoveredFeatureId = null;
+    } else {
+        hoveredFeatureId2 = null;
+    }
+}
+
+function hideTooltip(map) {
+    var tooltipId = map === map1 ? 'tooltip-map1' : 'tooltip-map2';
+    var tooltip = document.getElementById(tooltipId);
+    tooltip.style.display = 'none';
+}
+
+
+// Register map events for handling mouse interaction
+map1.on('mousemove', 'choropleth-layer', function(e) {
+onHover(map1, 'choropleth-layer', e);
+});
+map1.on('mouseleave', 'choropleth-layer', function() {
+resetTooltip(map1, 'choropleth-layer');
+hideTooltip(map2);
+});
+
+map2.on('mousemove', 'regions-fill', function(e) {
+onHover(map2, 'regions-fill', e);
+});
+
+map2.on('mouseleave', 'regions-fill', function(){
+    resetTooltip(map2, 'regions-fill'); // Reset tooltip for map2
+    hideTooltip(map1);  // Hide tooltip for map1
+});
+    // hideTooltip(map1);
+// map2.setFeatureState({
+//                 source: 'regions-fill',
+//                 id: hoveredFeatureId2
+//             }, { hover: false });
+//             hoveredFeatureId2 = null;
+//         }
+// Menu actions
+
+//all the other button interactions 
+document.getElementById('zoom-in').addEventListener('click', function() {
+    map1.setZoom(map1.getZoom() + 0.35); 
+    map2.setZoom(map2.getZoom() + 0.35);
+});
+
+document.getElementById('zoom-out').addEventListener('click', function() {
+    map1.setZoom(map1.getZoom() - 0.35);
+    map2.setZoom(map2.getZoom() - 0.35);
+});
+//reset button interactions, set to reset to the center of the map
+document.getElementById('reset').addEventListener('click', function() {
+    map1.jumpTo({
+        center: [-73.63568, 40.76695],
+        zoom: 8.5,
+    });
+    map2.jumpTo({
+        center: [-73.63568, 40.76695],
+        zoom: 8.5,
+    });
+});
+
+document.getElementById('pan-left').addEventListener('click', function() {
+    map1.panBy([-50, 0]);
+    map2.panBy([-50, 0]);
+});
+document.getElementById('pan-right').addEventListener('click', function() {
+    map1.panBy([50, 0]);
+    map2.panBy([50, 0]);
+});
+document.getElementById('pan-up').addEventListener('click', function() {
+    map1.panBy([0, -50]);
+    map2.panBy([0, -50]);
+});
+document.getElementById('pan-down').addEventListener('click', function() {
+    map1.panBy([0, 50]);
+    map2.panBy([0, 50]);
+});
+
+// Synchronize the movement of both maps with better event handling
+function syncMaps(mapA, mapB) {
+    mapA.on('move', function() {
+        if (!mapB.moving) {
+            mapB.moving = true; // prevent mapB from triggering its move event
+            mapB.jumpTo({
+                center: mapA.getCenter(),
+                zoom: mapA.getZoom(),
+                bearing: mapA.getBearing(),
+                pitch: mapA.getPitch()
+            });
+        }
+    });
+
+    mapB.on('moveend', function() {
+        mapB.moving = false; // reset the moving flag after mapB finishes moving
+    });
+}
+
+syncMaps(map1, map2);
+syncMaps(map2, map1);
+
+
+map1.on('click', 'choropleth-layer', (e) => {
+        console.log("Clicked on map1");
+        showPopup(e, map1, map2);
+    });
+
+    // Add click popup functionality for map2
+    map2.on('click', 'regions-fill', (e) => {
+        console.log("Clicked on map2");
+        showPopup(e, map2, map1);
+    });
+
+// Declare variables for storing current popups for each map
+var currentPopupMap1 = null;
+var currentPopupMap2 = null;
+
+
+function showPopup(event, clickedMap) {
+    var clickedFeature = event.features[0];
+    var clickedLngLat = event.lngLat;
+    
+    // Retrieve the corresponding map and its popup storage variable, this is important for both popups opening at the same time 
+    var otherMap = clickedMap === map1 ? map2 : map1;
+    var currentPopupClickedMap = clickedMap === map1 ? 'currentPopupMap1' : 'currentPopupMap2';
+    var currentPopupOtherMap = otherMap === map1 ? 'currentPopupMap1' : 'currentPopupMap2';
+
+    // Close the existing popup if it exists
+    if (this[currentPopupClickedMap]) {
+        this[currentPopupClickedMap].remove();
+    }
+    if (this[currentPopupOtherMap]) {
+        this[currentPopupOtherMap].remove();
+    }
+
+    // Create popup content for the clicked map
+    var popupContentClickedMap = 'Election District: ' + clickedFeature.properties['ED'] + '<br>' +
+        'Democratic Vote count: ' + clickedFeature.properties['Democratic'] + '<br>' +
+        'Republican Vote count: ' + clickedFeature.properties['Republican'] + '<br>' +
+        'Total number of Votes: ' + (clickedMap === map1 ? clickedFeature.properties['Total Vote'] : clickedFeature.properties['Total']);
+    
+    // Create and display the new popup
+    var clickedPopup = new mapboxgl.Popup({offset: 25})
+        .setLngLat(clickedMap.unproject([0, event.point.y]))
+        .setHTML(popupContentClickedMap)
+        .addTo(clickedMap);
+    
+    // Store the new popup reference
+    this[currentPopupClickedMap] = clickedPopup;
+
+ // Set timeout to close the popup after x seconds
+    setTimeout(() => {
+        clickedPopup.remove();
+        this[currentPopupClickedMap] = null;
+    }, 4000);
+
+    // Find a corresponding feature on the other map
+    var otherMapLayer = clickedMap === map1 ? 'regions-fill' : 'choropleth-layer';
+    var otherMapFeatures = otherMap.queryRenderedFeatures(otherMap.project(clickedLngLat), { layers: [otherMapLayer] });
+    
+    if (otherMapFeatures.length > 0) {
+        var matchingFeature = otherMapFeatures[0];
+        var popupContentOtherMap = 'Election District: ' + matchingFeature.properties['ED'] + '<br>' +
+            'Democratic Vote count: ' + matchingFeature.properties['Democratic'] + '<br>' +
+            'Republican Vote count: ' + matchingFeature.properties['Republican'] + '<br>' +
+            'Total number of Votes: ' + (clickedMap === map1 ? matchingFeature.properties['Total'] : matchingFeature.properties['Total Vote']);
+        
+        var otherPopup = new mapboxgl.Popup({offset: 20})
+            .setLngLat(otherMap.unproject([0, otherMap.project(clickedLngLat).y]))
+            .setHTML(popupContentOtherMap)
+            .addTo(otherMap);
+        
+        // Store the new popup reference
+        this[currentPopupOtherMap] = otherPopup;
+
+                // Set timeout to close the popup after 10 seconds
+                setTimeout(() => {
+            otherPopup.remove();
+            this[currentPopupOtherMap] = null;
+        }, 4000);
+    }
+}
+
+
+</script>  
+
+</body>
+</html>
+
